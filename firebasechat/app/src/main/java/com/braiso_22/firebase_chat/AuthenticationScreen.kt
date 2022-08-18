@@ -30,23 +30,29 @@ fun AuthenticationScreen() {
 
 @Composable
 fun checkDataButtons() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Button(
-            onClick = { },
-            modifier = Modifier.weight(10f)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Login")
+            Button(
+                onClick = { },
+                modifier = Modifier.weight(10f)
+            ) {
+                Text("Login")
+            }
+            Spacer(
+                modifier = Modifier.weight(1f)
+            )
+            Button(
+                onClick = { },
+                modifier = Modifier.weight(10f)
+            ) {
+                Text("Register")
+            }
         }
-        Spacer(
-            modifier = Modifier.weight(1f)
-        )
-        Button(
-            onClick = { },
-            modifier = Modifier.weight(10f)
-        ) {
-            Text("Register")
+        Button(onClick = { /*TODO*/ },
+        modifier = Modifier.fillMaxWidth()) {
+            Text(text = "Google")
         }
     }
 }
