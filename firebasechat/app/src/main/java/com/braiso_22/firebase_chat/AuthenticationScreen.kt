@@ -1,14 +1,18 @@
 package com.braiso_22.firebase_chat
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material.*
+import androidx.compose.material.ContentAlpha.medium
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 @Preview(showBackground = true)
@@ -22,10 +26,21 @@ fun AuthenticationScreen() {
             )
             .fillMaxSize()
     ) {
+        appLogo()
+        Spacer(modifier = Modifier.padding(32.dp))
         userDataInput()
         Spacer(modifier = Modifier.padding(16.dp))
         checkDataButtons()
     }
+}
+
+@Composable
+fun appLogo() {
+    Image(
+        painter = painterResource(id = R.drawable.text_with_logo),
+        contentDescription = "App logo"
+    )
+    Text(text = "Chat", fontSize = 40.sp)
 }
 
 @Composable
@@ -38,7 +53,7 @@ fun checkDataButtons() {
                 onClick = { },
                 modifier = Modifier.weight(10f)
             ) {
-                Text("Login")
+                Text("Login", fontSize = 16.sp)
             }
             Spacer(
                 modifier = Modifier.weight(1f)
@@ -47,12 +62,37 @@ fun checkDataButtons() {
                 onClick = { },
                 modifier = Modifier.weight(10f)
             ) {
-                Text("Register")
+                Text("Register", fontSize = 16.sp)
             }
         }
-        Button(onClick = { /*TODO*/ },
-        modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Google")
+        Spacer(modifier = Modifier.height(12.dp))
+        GoogleButton()
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun GoogleButton() {
+
+    Surface(
+        onClick = {},
+        shape = Shapes().medium,
+        border = BorderStroke(width = 1.dp, color = Color.LightGray),
+        color = MaterialTheme.colors.surface
+    ) {
+
+        Row(
+            modifier = Modifier.padding(start = 12.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+
+            Image(
+                painter = painterResource(id = R.drawable.ic_google_logo),
+                contentDescription = "Google icon"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = "Sign Up with Google", fontSize = 16.sp)
         }
     }
 }
