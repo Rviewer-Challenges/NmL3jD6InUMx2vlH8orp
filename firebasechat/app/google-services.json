@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "600640030098",
+    "project_id": "fir-chat-eb131",
+    "storage_bucket": "fir-chat-eb131.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:600640030098:android:eb240bdd3a04c87800ad4b",
+        "android_client_info": {
+          "package_name": "com.braiso_22.firebase_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "600640030098-pm9kn551mc87a7cjf0r9f3qedovpea7l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTxZhQvvEat7rWRrXgMi96Zp-ofY8Flhc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "600640030098-pm9kn551mc87a7cjf0r9f3qedovpea7l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
