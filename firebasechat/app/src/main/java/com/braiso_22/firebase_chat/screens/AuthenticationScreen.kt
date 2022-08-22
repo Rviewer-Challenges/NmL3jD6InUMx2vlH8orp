@@ -124,7 +124,23 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                 modifier = Modifier.weight(1f)
             )
             Button(
-                onClick = { },
+                onClick = {
+                    if (isEmail(email.value) && isPassword(password.value)
+                    ) {
+                        viewModel.loginWithEmailAndPass(
+                            email.value,
+                            password.value
+                        ) { isSuccessful ->
+                            if (isSuccessful) {
+                                navigator.navigate(ChatScreenDestination)
+                            } else {
+                                showAlert(context = localContext, "No se pudo hacer login con el usuario")
+                            }
+                        }
+                    } else {
+                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                    }
+                },
                 modifier = Modifier.weight(10f)
             ) {
                 Text("Register", fontSize = 16.sp)

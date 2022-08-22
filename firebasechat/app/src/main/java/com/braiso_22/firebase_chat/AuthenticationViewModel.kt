@@ -24,14 +24,23 @@ class AuthenticationViewModel {
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(
             email,
             password
-        ).addOnCompleteListener() {
+        ).addOnCompleteListener {
             navigate(it.isSuccessful)
         }
     }
 
 
-    fun loginWithEmail() {
-
+    fun loginWithEmailAndPass(
+        email: String,
+        password: String,
+        navigate: (successful: Boolean) -> Unit
+    ) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(
+            email,
+            password
+        ).addOnCompleteListener{
+            navigate(it.isSuccessful)
+        }
     }
 
     fun loginWithGoogle(context: Context): Intent {
