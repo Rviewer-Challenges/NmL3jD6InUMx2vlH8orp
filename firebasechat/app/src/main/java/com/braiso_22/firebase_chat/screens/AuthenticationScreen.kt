@@ -1,5 +1,6 @@
 package com.braiso_22.firebase_chat.screens
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -10,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,11 +19,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braiso_22.firebase_chat.AuthenticationViewModel
 import com.braiso_22.firebase_chat.R
 import com.braiso_22.firebase_chat.screens.destinations.ChatScreenDestination
+import com.braiso_22.firebase_chat.utils.isEmail
+import com.braiso_22.firebase_chat.utils.isPassword
 import com.braiso_22.firebase_chat.viewModel
 import com.google.android.gms.common.api.ApiException
 import com.ramcosta.composedestinations.annotation.Destination
@@ -29,6 +36,9 @@ import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 lateinit var launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+var email = mutableStateOf("")
+var password = mutableStateOf("")
+
 
 @RootNavGraph(start = true)
 @Destination(route = "auth")
@@ -62,13 +72,50 @@ fun appLogo() {
 }
 
 @Composable
+fun userDataInput() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        singleLineTextField(
+            label = "Email",
+            keyboardType = KeyboardType.Text,
+            stringValue = email
+        )
+        Spacer(modifier = Modifier.padding(16.dp))
+        singleLineTextField(
+            label = "Password",
+            keyboardType = KeyboardType.Password,
+            visualTransformation = PasswordVisualTransformation(),
+            stringValue = password
+        )
+    }
+}
+@Composable
 fun checkDataButtons(navigator: DestinationsNavigator) {
+    val localContext = LocalContext.current.applicationContext
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Button(
-                onClick = { },
+                onClick = {
+                    if (isEmail(email.value) && isPassword(password.value)
+                    ) {
+                        viewModel.registerWithEmailAndPass(
+                            email.value,
+                            password.value
+                        ) { isSuccessful ->
+                            if (isSuccessful) {
+                                navigator.navigate(ChatScreenDestination)
+                            } else {
+                                showAlert(context = localContext, "No se pudo registrar el usuario")
+                            }
+                        }
+                    } else {
+                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                    }
+                },
                 modifier = Modifier.weight(10f)
             ) {
                 Text("Login", fontSize = 16.sp)
@@ -88,6 +135,14 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
     }
 }
 
+fun showAlert(context: Context, message: String) {
+    Toast.makeText(
+        context,
+        message,
+        Toast.LENGTH_SHORT
+    ).show()
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GoogleButton(navigator: DestinationsNavigator) {
@@ -95,17 +150,17 @@ fun GoogleButton(navigator: DestinationsNavigator) {
     launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
             try {
-                AuthenticationViewModel().signInWithGoogle(it.data) { isSusccesful ->
-                    if (isSusccesful) {
+                AuthenticationViewModel().signInWithGoogle(it.data) { isSuccessful ->
+                    if (isSuccessful) {
                         navigator.navigate(ChatScreenDestination)
                     } else {
-                        Toast.makeText(localContext,"Google sign in failed",Toast.LENGTH_SHORT).show()
+                        showAlert(localContext, "Google sign in failed")
                     }
                 }
             } catch (e: ApiException) {
-                Toast.makeText(localContext,"Google sign is currently disabled",Toast.LENGTH_SHORT).show()
-                Log.w("TAG", "Error, couldn't get credentials", e)
-            }catch (e:Exception){
+                showAlert(localContext, "Google sign in failed")
+                Log.w("TAG", "Error with sign in", e)
+            } catch (e: Exception) {
                 Toast.makeText(localContext, "Unknown exception ", Toast.LENGTH_LONG).show()
                 Log.w("TAG", "unhandled exception", e)
             }
@@ -137,19 +192,12 @@ fun GoogleButton(navigator: DestinationsNavigator) {
 }
 
 @Composable
-fun userDataInput() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        singleLineTextField("Email")
-        Spacer(modifier = Modifier.padding(16.dp))
-        singleLineTextField("Password")
-    }
-}
-
-@Composable
-fun singleLineTextField(label: String) {
+fun singleLineTextField(
+    label: String,
+    keyboardType: KeyboardType,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    stringValue: MutableState<String>
+) {
     var textFieldState by remember {
         mutableStateOf("")
     }
@@ -158,7 +206,12 @@ fun singleLineTextField(label: String) {
         label = { Text(label) },
         onValueChange = {
             textFieldState = it
+            stringValue.value = it
         },
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
+        ),
         singleLine = true,
         modifier = Modifier.fillMaxWidth()
     )
