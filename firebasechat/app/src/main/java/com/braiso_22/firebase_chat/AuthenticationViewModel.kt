@@ -2,23 +2,33 @@ package com.braiso_22.firebase_chat
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import com.braiso_22.firebase_chat.screens.launcher
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.internal.synchronized
+import kotlinx.coroutines.runBlocking
+import java.lang.Exception
 
 val viewModel = AuthenticationViewModel()
 
 class AuthenticationViewModel {
+
+    fun registerWithEmailAndPass(
+        email: String,
+        password: String,
+        navigate: (successful: Boolean) -> Unit
+    ) {
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(
+            email,
+            password
+        ).addOnCompleteListener() {
+            navigate(it.isSuccessful)
+        }
+    }
+
 
     fun loginWithEmail() {
 

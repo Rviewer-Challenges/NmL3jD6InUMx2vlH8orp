@@ -62,13 +62,51 @@ fun appLogo() {
 }
 
 @Composable
+fun userDataInput() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        singleLineTextField(
+            label = "Email",
+            keyboardType = KeyboardType.Text,
+            stringValue = email
+        )
+        Spacer(modifier = Modifier.padding(16.dp))
+        singleLineTextField(
+            label = "Password",
+            keyboardType = KeyboardType.Password,
+            visualTransformation = PasswordVisualTransformation(),
+            stringValue = password
+        )
+    }
+}
+@Composable
 fun checkDataButtons(navigator: DestinationsNavigator) {
+    
+    val localContext = LocalContext.current.applicationContext
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Button(
-                onClick = { },
+                onClick = {
+                    if (isEmail(email.value) && isPassword(password.value)
+                    ) {
+                        viewModel.registerWithEmailAndPass(
+                            email.value,
+                            password.value
+                        ) { isSuccessful ->
+                            if (isSuccessful) {
+                                navigator.navigate(ChatScreenDestination)
+                            } else {
+                                showAlert(context = localContext, "No se pudo registrar el usuario")
+                            }
+                        }
+                    } else {
+                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                    }
+                },
                 modifier = Modifier.weight(10f)
             ) {
                 Text("Login", fontSize = 16.sp)
@@ -86,6 +124,14 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
         Spacer(modifier = Modifier.height(12.dp))
         GoogleButton(navigator = navigator)
     }
+}
+
+fun showAlert(context: Context, message: String) {
+    Toast.makeText(
+        context,
+        message,
+        Toast.LENGTH_SHORT
+    ).show()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
