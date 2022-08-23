@@ -163,7 +163,7 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                 },
                 modifier = Modifier.weight(10f)
             ) {
-                Text("Login", fontSize = 16.sp)
+                Text("Register", fontSize = 16.sp)
             }
             Spacer(
                 modifier = Modifier.weight(1f)
@@ -191,7 +191,7 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                 },
                 modifier = Modifier.weight(10f)
             ) {
-                Text("Register", fontSize = 16.sp)
+                Text("Login", fontSize = 16.sp)
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
