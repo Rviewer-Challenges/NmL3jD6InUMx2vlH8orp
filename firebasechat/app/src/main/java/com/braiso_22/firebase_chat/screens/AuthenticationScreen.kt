@@ -110,6 +110,15 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                         ) { isSuccessful ->
                             if (isSuccessful) {
                                 navigator.navigate(ContactsScreenDestination)
+                                val user = User(
+                                    Firebase.auth.currentUser?.email!!,
+                                    Firebase.auth.currentUser?.displayName!!
+                                )
+                                firebaseViewModel.getAllUsers { list ->
+                                    if (!list.contains(user)) {
+                                        firebaseViewModel.saveUser(user)
+                                    }
+                                }
                             } else {
                                 showAlert(context = localContext, "No se pudo registrar el usuario")
                             }
@@ -183,7 +192,6 @@ fun GoogleButton(navigator: DestinationsNavigator) {
                                 firebaseViewModel.saveUser(user)
                             }
                         }
-
 
                     } else {
                         showAlert(localContext, "Google sign in failed")
