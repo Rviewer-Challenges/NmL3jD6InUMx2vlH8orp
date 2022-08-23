@@ -30,6 +30,21 @@ class FirebaseViewModel {
         }
     }
 
+    fun getUserByEmail(email: String, func: (User) -> Unit) =
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val querySnapshot =
+                    usersCollection.whereEqualTo("email", email).limit(1).get().await()
+
+                for (document in querySnapshot.documents) {
+                    func(document.toObject<User>()!!)
+                }
+
+            } catch (e: Exception) {
+                e.message?.let { Log.e("Error", it) }
+            }
+        }
+
     fun saveUser(user: User) = CoroutineScope(Dispatchers.IO).launch {
         try {
             val querySnapshot = usersCollection.get().await()
