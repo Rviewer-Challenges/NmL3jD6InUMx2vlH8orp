@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,11 +20,18 @@ import com.ramcosta.composedestinations.annotation.Destination
 
 @Composable
 @Preview
-@Destination(route = "chat")
+@Destination(route = "contacts")
 fun ContactsScreen() {
     var users = remember {
         mutableStateListOf<User>()
     }
+    var username = remember {
+        mutableStateOf("")
+    }
+    firebaseViewModel.getUserByEmail(Firebase.auth.currentUser?.email!!) { user ->
+        username.value = user.name
+    }
+
     firebaseViewModel.suscribeToRealtimeUpdates {
         users.clear()
         users.addAll(it)
@@ -42,7 +47,8 @@ fun ContactsScreen() {
         ) {
             Button(onClick = {}) {
             }
-            Text(text = Firebase.auth.currentUser?.displayName!!, fontSize = 20.sp)
+
+            Text(text = username.value, fontSize = 20.sp)
         }
     }) {
         LazyColumn(
