@@ -7,12 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.internal.synchronized
-import kotlinx.coroutines.runBlocking
-import java.lang.Exception
-
-val viewModel = AuthenticationViewModel()
+val authViewModel = AuthenticationViewModel()
 
 class AuthenticationViewModel {
 
@@ -38,7 +33,7 @@ class AuthenticationViewModel {
         FirebaseAuth.getInstance().signInWithEmailAndPassword(
             email,
             password
-        ).addOnCompleteListener{
+        ).addOnCompleteListener {
             navigate(it.isSuccessful)
         }
     }
