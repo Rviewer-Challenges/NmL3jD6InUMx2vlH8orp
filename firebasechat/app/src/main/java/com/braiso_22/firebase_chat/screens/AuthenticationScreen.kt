@@ -26,10 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braiso_22.firebase_chat.AuthenticationViewModel
 import com.braiso_22.firebase_chat.R
-import com.braiso_22.firebase_chat.screens.destinations.ChatScreenDestination
+import com.braiso_22.firebase_chat.screens.destinations.ContactsScreenDestination
 import com.braiso_22.firebase_chat.utils.isEmail
 import com.braiso_22.firebase_chat.utils.isPassword
-import com.braiso_22.firebase_chat.viewModel
+import com.braiso_22.firebase_chat.authViewModel
+import com.braiso_22.firebase_chat.firebaseViewModel
+import com.braiso_22.firebase_chat.model.User
 import com.google.android.gms.common.api.ApiException
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
@@ -38,7 +40,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 lateinit var launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
 var email = mutableStateOf("")
 var password = mutableStateOf("")
-
 
 @RootNavGraph(start = true)
 @Destination(route = "auth")
@@ -102,12 +103,12 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                 onClick = {
                     if (isEmail(email.value) && isPassword(password.value)
                     ) {
-                        viewModel.registerWithEmailAndPass(
+                        authViewModel.registerWithEmailAndPass(
                             email.value,
                             password.value
                         ) { isSuccessful ->
                             if (isSuccessful) {
-                                navigator.navigate(ChatScreenDestination)
+                                navigator.navigate(ContactsScreenDestination)
                             } else {
                                 showAlert(context = localContext, "No se pudo registrar el usuario")
                             }
@@ -124,7 +125,23 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                 modifier = Modifier.weight(1f)
             )
             Button(
-                onClick = { },
+                onClick = {
+                    if (isEmail(email.value) && isPassword(password.value)
+                    ) {
+                        authViewModel.loginWithEmailAndPass(
+                            email.value,
+                            password.value
+                        ) { isSuccessful ->
+                            if (isSuccessful) {
+                                navigator.navigate(ContactsScreenDestination)
+                            } else {
+                                showAlert(context = localContext, "No se pudo hacer login con el usuario")
+                            }
+                        }
+                    } else {
+                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                    }
+                },
                 modifier = Modifier.weight(10f)
             ) {
                 Text("Register", fontSize = 16.sp)
@@ -152,7 +169,7 @@ fun GoogleButton(navigator: DestinationsNavigator) {
             try {
                 AuthenticationViewModel().signInWithGoogle(it.data) { isSuccessful ->
                     if (isSuccessful) {
-                        navigator.navigate(ChatScreenDestination)
+                        navigator.navigate(ContactsScreenDestination)
                     } else {
                         showAlert(localContext, "Google sign in failed")
                     }
@@ -168,7 +185,7 @@ fun GoogleButton(navigator: DestinationsNavigator) {
 
     Surface(
         onClick = {
-            val intent = viewModel.loginWithGoogle(context = localContext)
+            val intent = authViewModel.loginWithGoogle(context = localContext)
             launcher.launch(intent)
         },
         shape = Shapes().medium,
