@@ -22,7 +22,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 
 @Composable
 @Preview
-@Destination(route = "chat")
+@Destination(route = "contacts")
 fun ContactsScreen() {
     var users = remember {
         mutableStateListOf<User>()
