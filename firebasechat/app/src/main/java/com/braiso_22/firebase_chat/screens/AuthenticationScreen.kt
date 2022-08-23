@@ -36,8 +36,11 @@ import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlin.coroutines.coroutineContext
 
 lateinit var launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+
+var username = mutableStateOf("")
 var email = mutableStateOf("")
 var password = mutableStateOf("")
 
@@ -79,6 +82,12 @@ fun userDataInput() {
         verticalArrangement = Arrangement.Center,
     ) {
         singleLineTextField(
+            label = "Username",
+            keyboardType = KeyboardType.Text,
+            stringValue = username
+        )
+
+        singleLineTextField(
             label = "Email",
             keyboardType = KeyboardType.Text,
             stringValue = email
@@ -95,37 +104,62 @@ fun userDataInput() {
 
 @Composable
 fun checkDataButtons(navigator: DestinationsNavigator) {
-    val localContext = LocalContext.current.applicationContext
+    val localContext = LocalContext.current
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Button(
                 onClick = {
-                    if (isEmail(email.value) && isPassword(password.value)
+                    var userExists = false
+                    firebaseViewModel.getAllUsers {
+                        for (user in it) {
+                            if (user.name == username.value) {
+                                userExists = true
+                                break
+                            }
+                        }
+                    }
+
+                    if (!userExists && username.value.isNotEmpty()
+                        && isEmail(email.value) && isPassword(password.value)
                     ) {
                         authViewModel.registerWithEmailAndPass(
                             email.value,
                             password.value
                         ) { isSuccessful ->
                             if (isSuccessful) {
-                                navigator.navigate(ContactsScreenDestination)
                                 val user = User(
                                     Firebase.auth.currentUser?.email!!,
-                                    Firebase.auth.currentUser?.displayName!!
+                                    username.value
                                 )
                                 firebaseViewModel.getAllUsers { list ->
                                     if (!list.contains(user)) {
                                         firebaseViewModel.saveUser(user)
                                     }
                                 }
+                                navigator.navigate(ContactsScreenDestination)
                             } else {
-                                showAlert(context = localContext, "No se pudo registrar el usuario")
+                                showAlert(
+                                    context = localContext,
+                                    "No se pudo registrar el usuario"
+                                )
                             }
                         }
+                    } else if (!userExists && username.value.isNotEmpty()
+                        && isEmail(email.value) && !isPassword(password.value)) {
+                        showAlert(
+                            context = localContext,
+                            "La contraseña debe de tener una Mayuscula, una minuscula, un número, un caracter especial y al menos 8 caracteres en total"
+                        )
                     } else {
-                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                        showAlert(
+                            context = localContext,
+                            "Usuario/gmail o contraseña invalidos"
+                        )
                     }
+
+
                 },
                 modifier = Modifier.weight(10f)
             ) {
