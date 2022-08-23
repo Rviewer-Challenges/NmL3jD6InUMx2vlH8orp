@@ -16,14 +16,14 @@ class FirebaseViewModel {
     private val usersCollection = Firebase.firestore.collection("users")
 
 
-    fun getAllUsers(ui: (List<User>) -> Unit) = CoroutineScope(Dispatchers.IO).launch {
+    fun getAllUsers(func: (List<User>) -> Unit) = CoroutineScope(Dispatchers.IO).launch {
         try {
             val querySnapshot = usersCollection.get().await()
             val arrayUsers = mutableListOf<User>()
             for (document in querySnapshot.documents) {
                 arrayUsers.add(document.toObject<User>()!!)
             }
-            ui(arrayUsers)
+            func(arrayUsers)
 
         } catch (e: Exception) {
 

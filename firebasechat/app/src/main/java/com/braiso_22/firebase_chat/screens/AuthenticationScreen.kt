@@ -24,15 +24,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braiso_22.firebase_chat.AuthenticationViewModel
+import com.braiso_22.firebase_chat.*
 import com.braiso_22.firebase_chat.R
 import com.braiso_22.firebase_chat.screens.destinations.ContactsScreenDestination
 import com.braiso_22.firebase_chat.utils.isEmail
 import com.braiso_22.firebase_chat.utils.isPassword
-import com.braiso_22.firebase_chat.authViewModel
-import com.braiso_22.firebase_chat.firebaseViewModel
 import com.braiso_22.firebase_chat.model.User
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -92,6 +92,7 @@ fun userDataInput() {
         )
     }
 }
+
 @Composable
 fun checkDataButtons(navigator: DestinationsNavigator) {
     val localContext = LocalContext.current.applicationContext
@@ -135,7 +136,10 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                             if (isSuccessful) {
                                 navigator.navigate(ContactsScreenDestination)
                             } else {
-                                showAlert(context = localContext, "No se pudo hacer login con el usuario")
+                                showAlert(
+                                    context = localContext,
+                                    "No se pudo hacer login con el usuario"
+                                )
                             }
                         }
                     } else {
@@ -170,6 +174,17 @@ fun GoogleButton(navigator: DestinationsNavigator) {
                 AuthenticationViewModel().signInWithGoogle(it.data) { isSuccessful ->
                     if (isSuccessful) {
                         navigator.navigate(ContactsScreenDestination)
+                        val user = User(
+                            Firebase.auth.currentUser?.email!!,
+                            Firebase.auth.currentUser?.displayName!!
+                        )
+                        firebaseViewModel.getAllUsers { list ->
+                            if (!list.contains(user)) {
+                                firebaseViewModel.saveUser(user)
+                            }
+                        }
+
+
                     } else {
                         showAlert(localContext, "Google sign in failed")
                     }
