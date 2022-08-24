@@ -142,7 +142,7 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                             } else {
                                 showAlert(
                                     context = localContext,
-                                    "No se pudo registrar el usuario"
+                                    "Failed to register user"
                                 )
                             }
                         }
@@ -150,7 +150,9 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                         && isEmail(email.value) && !isPassword(password.value)) {
                         showAlert(
                             context = localContext,
-                            "La contraseña debe de tener una Mayuscula, una minuscula, un número, un caracter especial y al menos 8 caracteres en total"
+                            "The password must have an uppercase," +
+                                    " a lowercase, a number, a special character and at" +
+                                    " least 8 characters in total"
                         )
                     } else {
                         showAlert(
@@ -181,12 +183,12 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                             } else {
                                 showAlert(
                                     context = localContext,
-                                    "No se pudo hacer login con el usuario"
+                                    "Failed to login with the user"
                                 )
                             }
                         }
                     } else {
-                        showAlert(context = localContext, "Usuario o contraseña invalidos")
+                        showAlert(context = localContext, "Invalid username or password")
                     }
                 },
                 modifier = Modifier.weight(10f)
