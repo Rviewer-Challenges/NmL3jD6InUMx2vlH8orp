@@ -1,27 +1,33 @@
 package com.braiso_22.firebase_chat.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.braiso_22.firebase_chat.authViewModel
 import com.braiso_22.firebase_chat.firebaseViewModel
 import com.braiso_22.firebase_chat.model.User
+import com.braiso_22.firebase_chat.screens.destinations.ChatScreenDestination
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Composable
-@Preview
 @Destination(route = "contacts")
-fun ContactsScreen() {
+fun ContactsScreen(navigator: DestinationsNavigator) {
     var users = remember {
         mutableStateListOf<User>()
     }
@@ -36,20 +42,23 @@ fun ContactsScreen() {
         users.clear()
         users.addAll(it)
     }
-    val scrollState = rememberScrollState()
+    val localContext = LocalContext.current.applicationContext
     Scaffold(topBar = {
-        Row(
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = Color.Yellow)
-        ) {
-            Button(onClick = {}) {
-            }
-
+        TopAppBar(title = {
             Text(text = username.value, fontSize = 20.sp)
-        }
+        },
+            navigationIcon = {
+                IconButton(onClick = {
+                    navigator.navigateUp()
+                    authViewModel.signOutGoogle(localContext)
+                    Toast.makeText(localContext, "Signed out", Toast.LENGTH_SHORT).show()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            })
     }) {
         LazyColumn(
             modifier = Modifier
@@ -60,7 +69,7 @@ fun ContactsScreen() {
         ) {
             itemsIndexed(users) { _, item ->
                 Row() {
-                    userContact(user = item)
+                    userContact(user = item, navigator)
                 }
             }
         }
@@ -68,12 +77,13 @@ fun ContactsScreen() {
 }
 
 @Composable
-fun userContact(user: User) {
+fun userContact(user: User, navigator: DestinationsNavigator) {
     Column(modifier = Modifier
         .padding(8.dp, 0.dp)
         .fillMaxSize()
         .clickable {
             firebaseViewModel.creteChatWith(user)
+            navigator.navigate(ChatScreenDestination)
 
         }) {
         Row() {
