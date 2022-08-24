@@ -14,14 +14,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braiso_22.firebase_chat.firebaseViewModel
 import com.braiso_22.firebase_chat.model.User
+import com.braiso_22.firebase_chat.screens.destinations.ChatScreenDestination
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Composable
-@Preview
 @Destination(route = "contacts")
-fun ContactsScreen() {
+fun ContactsScreen( navigator: DestinationsNavigator) {
     var users = remember {
         mutableStateListOf<User>()
     }
@@ -36,7 +37,7 @@ fun ContactsScreen() {
         users.clear()
         users.addAll(it)
     }
-    val scrollState = rememberScrollState()
+    
     Scaffold(topBar = {
         Row(
             horizontalArrangement = Arrangement.SpaceAround,
@@ -60,7 +61,7 @@ fun ContactsScreen() {
         ) {
             itemsIndexed(users) { _, item ->
                 Row() {
-                    userContact(user = item)
+                    userContact(user = item, navigator)
                 }
             }
         }
@@ -68,12 +69,13 @@ fun ContactsScreen() {
 }
 
 @Composable
-fun userContact(user: User) {
+fun userContact(user: User, navigator: DestinationsNavigator) {
     Column(modifier = Modifier
         .padding(8.dp, 0.dp)
         .fillMaxSize()
         .clickable {
             firebaseViewModel.creteChatWith(user)
+            navigator.navigate(ChatScreenDestination)
 
         }) {
         Row() {
