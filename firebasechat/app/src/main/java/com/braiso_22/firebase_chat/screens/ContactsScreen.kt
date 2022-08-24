@@ -63,19 +63,17 @@ fun ContactsScreen() {
                     userContact(user = item)
                 }
             }
-
         }
     }
-
 }
 
 @Composable
 fun userContact(user: User) {
-
     Column(modifier = Modifier
         .padding(8.dp, 0.dp)
         .fillMaxSize()
         .clickable {
+            firebaseViewModel.creteChatWith(user)
 
         }) {
         Row() {

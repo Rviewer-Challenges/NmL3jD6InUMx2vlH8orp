@@ -1,19 +1,21 @@
 package com.braiso_22.firebase_chat
 
 import android.util.Log
+import com.braiso_22.firebase_chat.model.Chat
+import com.braiso_22.firebase_chat.model.Message
 import com.braiso_22.firebase_chat.model.User
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
 
 val firebaseViewModel = FirebaseViewModel()
 
 class FirebaseViewModel {
     private val usersCollection = Firebase.firestore.collection("users")
+    private val chatsCollection = Firebase.firestore.collection("chats")
 
 
     fun getAllUsers(func: (List<User>) -> Unit) = CoroutineScope(Dispatchers.IO).launch {
@@ -26,7 +28,7 @@ class FirebaseViewModel {
             func(arrayUsers)
 
         } catch (e: Exception) {
-
+            e.message?.let { Log.e("Error", it) }
         }
     }
 
@@ -43,6 +45,47 @@ class FirebaseViewModel {
             } catch (e: Exception) {
                 e.message?.let { Log.e("Error", it) }
             }
+        }
+
+    private fun getDocIdByEmail(email: String, func: (String) -> Unit) =
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val querySnapshot =
+                    usersCollection.whereEqualTo("email", email).limit(1).get().await()
+
+                for (document in querySnapshot.documents) {
+                    func(document.id)
+                }
+
+            } catch (e: Exception) {
+                e.message?.let { Log.e("Error", it) }
+            }
+        }
+
+    fun creteChatWith(user: User) =
+        CoroutineScope(Dispatchers.IO).launch {
+            var currentId = ""
+            var otherId = ""
+
+                firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
+                    currentId = id
+                }.join()
+
+                firebaseViewModel.getDocIdByEmail(user.email) { id ->
+                    otherId = id
+                }.join()
+
+            val id1 = "$currentId-$otherId"
+            val id2 = "$otherId-$currentId"
+
+            val querySnapshot = chatsCollection.get().await()
+            for (document in querySnapshot.documents) {
+                if (document.id == id1 || document.id == id2) {
+                    return@launch
+                }
+            }
+
+            chatsCollection.document(id1).set(Chat())
         }
 
     fun saveUser(user: User) = CoroutineScope(Dispatchers.IO).launch {
