@@ -1,5 +1,7 @@
 package com.braiso_22.firebase_chat.model
 
-data class User(val email: String, val name: String) {
+import java.io.Serializable
+
+data class User(val email: String, val name: String) : Serializable {
     constructor() : this("", "")
 }

@@ -83,7 +83,7 @@ fun userContact(user: User, navigator: DestinationsNavigator) {
         .fillMaxSize()
         .clickable {
             firebaseViewModel.creteChatWith(user)
-            navigator.navigate(ChatScreenDestination)
+            navigator.navigate(ChatScreenDestination(user))
 
         }) {
         Row() {
