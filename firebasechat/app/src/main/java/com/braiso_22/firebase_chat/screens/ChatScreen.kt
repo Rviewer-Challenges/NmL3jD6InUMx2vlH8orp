@@ -2,8 +2,10 @@ package com.braiso_22.firebase_chat.screens
 
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -12,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.braiso_22.firebase_chat.firebaseViewModel
 import com.braiso_22.firebase_chat.model.Message
 import com.braiso_22.firebase_chat.model.User
 import com.ramcosta.composedestinations.annotation.Destination
@@ -44,15 +47,7 @@ fun ChatScreen(otherUser: User, navigator: DestinationsNavigator) {
     },
         bottomBar = { messageBox() }
     ) {
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            messageList(otherUser)
-        }
+        messageList(user = otherUser, padding = it)
     }
 }
 
@@ -65,7 +60,7 @@ fun sentMessage(message: Message) {
             .padding(100.dp, end = 10.dp)
             .clip(RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp))
             .background(color = Color.LightGray)
-
+            .clickable {  }
     ) {
         Row(Modifier.padding(10.dp)) {
             Column(modifier = Modifier.weight(3.0f, true)) {
@@ -86,6 +81,7 @@ fun receivedMessage(message: Message) {
             .padding(10.dp, end = 100.dp)
             .clip(RoundedCornerShape(0.dp, 16.dp, 16.dp, 16.dp))
             .background(color = Color.Yellow)
+            .clickable {  }
 
     ) {
         Row(Modifier.padding(10.dp)) {
@@ -100,17 +96,27 @@ fun receivedMessage(message: Message) {
 }
 
 @Composable
-fun messageList(user: User) {
-    val listMessage = mutableListOf<Message>(Message("", ""))
-
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(listMessage) { _, message ->
-            Spacer(modifier = Modifier.height(8.dp))
-            if (message.email == user.email)
-                sentMessage(message = message)
-            else
-                receivedMessage(message = message)
-            Spacer(modifier = Modifier.height(24.dp))
+fun messageList(user: User, padding: PaddingValues) {
+    var listMessage = remember{
+        mutableStateListOf<Message>()
+    }
+    firebaseViewModel.suscribeToRealtimeMessages(user) {
+        listMessage.clear()
+        listMessage.addAll(it)
+    }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)) {
+        items(listMessage) {  message ->
+            Column() {
+                Spacer(modifier = Modifier.height(8.dp))
+                if (message.email != user.email)
+                    sentMessage(message = message)
+                else
+                    receivedMessage(message = message)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }

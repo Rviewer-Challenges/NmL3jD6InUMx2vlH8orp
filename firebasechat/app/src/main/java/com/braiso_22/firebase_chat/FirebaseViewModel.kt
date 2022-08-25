@@ -67,13 +67,13 @@ class FirebaseViewModel {
             var currentId = ""
             var otherId = ""
 
-                firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
-                    currentId = id
-                }.join()
+            firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
+                currentId = id
+            }.join()
 
-                firebaseViewModel.getDocIdByEmail(user.email) { id ->
-                    otherId = id
-                }.join()
+            firebaseViewModel.getDocIdByEmail(user.email) { id ->
+                otherId = id
+            }.join()
 
             val id1 = "$currentId-$otherId"
             val id2 = "$otherId-$currentId"
@@ -87,6 +87,49 @@ class FirebaseViewModel {
 
             chatsCollection.document(id1).set(Chat())
         }
+
+    fun suscribeToRealtimeMessages(user: User, setData: (list: MutableList<Message>) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            var currentId = ""
+            var otherId = ""
+            runBlocking {
+                firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
+                    currentId = id
+                }
+
+                firebaseViewModel.getDocIdByEmail(user.email) { id ->
+                    otherId = id
+                }
+            }.join()
+
+            val id1 = "$currentId-$otherId"
+            val id2 = "$otherId-$currentId"
+
+            val querySnapshot =
+                chatsCollection.document(id1)
+                    .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                        var mapMessages: ArrayList<HashMap<String, String>>
+                        var messages = mutableListOf<Message>()
+                        firebaseFirestoreException?.let {
+                            it.message?.let { it1 -> Log.e(this.toString(), it1) }
+                            return@addSnapshotListener
+                        }
+                        querySnapshot?.let {
+                            mapMessages = it?.get("messages")?.let { message ->
+                                message as ArrayList<HashMap<String, String>>
+                            } ?: run {
+                                ArrayList()
+                            }
+
+                            for (message in mapMessages)
+                                messages.add(
+                                    Message(message["message"]!!, message["email"]!!)
+                                )
+                            setData(messages)
+                        }
+                    }
+        }
+    }
 
     fun saveUser(user: User) = CoroutineScope(Dispatchers.IO).launch {
         try {
