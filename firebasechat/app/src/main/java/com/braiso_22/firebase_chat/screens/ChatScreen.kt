@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -45,7 +44,7 @@ fun ChatScreen(otherUser: User, navigator: DestinationsNavigator) {
                 }
             })
     },
-        bottomBar = { messageBox() }
+        bottomBar = { messageBox(otherUser) }
     ) {
         messageList(user = otherUser, padding = it)
     }
@@ -60,7 +59,7 @@ fun sentMessage(message: Message) {
             .padding(100.dp, end = 10.dp)
             .clip(RoundedCornerShape(16.dp, 0.dp, 16.dp, 16.dp))
             .background(color = Color.LightGray)
-            .clickable {  }
+            .clickable { }
     ) {
         Row(Modifier.padding(10.dp)) {
             Column(modifier = Modifier.weight(3.0f, true)) {
@@ -81,7 +80,7 @@ fun receivedMessage(message: Message) {
             .padding(10.dp, end = 100.dp)
             .clip(RoundedCornerShape(0.dp, 16.dp, 16.dp, 16.dp))
             .background(color = Color.Yellow)
-            .clickable {  }
+            .clickable { }
 
     ) {
         Row(Modifier.padding(10.dp)) {
@@ -97,18 +96,19 @@ fun receivedMessage(message: Message) {
 
 @Composable
 fun messageList(user: User, padding: PaddingValues) {
-    var listMessage = remember{
+    var listMessage = remember {
         mutableStateListOf<Message>()
     }
-    firebaseViewModel.suscribeToRealtimeMessages(user) {
+    firebaseViewModel.subscribeToRealtimeMessages(user) {
         listMessage.clear()
         listMessage.addAll(it)
     }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(padding)) {
-        items(listMessage) {  message ->
+            .padding(padding)
+    ) {
+        items(listMessage) { message ->
             Column() {
                 Spacer(modifier = Modifier.height(8.dp))
                 if (message.email != user.email)
@@ -122,9 +122,9 @@ fun messageList(user: User, padding: PaddingValues) {
 }
 
 @Composable
-fun messageBox() {
+fun messageBox(user: User) {
     val textState = remember {
-        mutableStateOf(TextFieldValue())
+        mutableStateOf(TextFieldValue(""))
     }
     Row(
         modifier = Modifier
@@ -144,7 +144,12 @@ fun messageBox() {
         )
 
         Spacer(modifier = Modifier.padding(12.dp))
-        FloatingActionButton(onClick = { /*TODO*/ }) {
+
+        FloatingActionButton(onClick = {
+            firebaseViewModel.saveMessage(textState.value.text, user)
+            textState.value = TextFieldValue("")
+
+        }) {
             Icon(imageVector = Icons.Default.Send, contentDescription = "send")
         }
     }

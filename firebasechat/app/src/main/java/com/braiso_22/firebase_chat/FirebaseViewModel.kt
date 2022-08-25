@@ -5,6 +5,7 @@ import com.braiso_22.firebase_chat.model.Chat
 import com.braiso_22.firebase_chat.model.Message
 import com.braiso_22.firebase_chat.model.User
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -88,7 +89,7 @@ class FirebaseViewModel {
             chatsCollection.document(id1).set(Chat())
         }
 
-    fun suscribeToRealtimeMessages(user: User, setData: (list: MutableList<Message>) -> Unit) {
+    fun subscribeToRealtimeMessages(user: User, setData: (list: MutableList<Message>) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             var currentId = ""
             var otherId = ""
@@ -96,17 +97,24 @@ class FirebaseViewModel {
                 firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
                     currentId = id
                 }
-
+            }.join()
+            runBlocking {
                 firebaseViewModel.getDocIdByEmail(user.email) { id ->
                     otherId = id
                 }
             }.join()
 
+
             val id1 = "$currentId-$otherId"
             val id2 = "$otherId-$currentId"
+            val id = if (!chatsCollection.document(id1).get().await().exists()) {
+                id2
+            } else {
+                id1
+            }
 
             val querySnapshot =
-                chatsCollection.document(id1)
+                chatsCollection.document(id)
                     .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                         var mapMessages: ArrayList<HashMap<String, String>>
                         var messages = mutableListOf<Message>()
@@ -131,6 +139,41 @@ class FirebaseViewModel {
         }
     }
 
+    fun saveMessage(message: String, user: User) {
+        CoroutineScope(Dispatchers.IO).launch {
+            var currentId = ""
+            var otherId = ""
+            runBlocking {
+                firebaseViewModel.getDocIdByEmail(Firebase.auth.currentUser?.email!!) { id ->
+                    currentId = id
+                }
+            }.join()
+            runBlocking {
+                firebaseViewModel.getDocIdByEmail(user.email) { id ->
+                    otherId = id
+                }
+            }.join()
+
+
+            val id1 = "$currentId-$otherId"
+            val id2 = "$otherId-$currentId"
+            val id = if (!chatsCollection.document(id1).get().await().exists()) {
+                id2
+            } else {
+                id1
+            }
+            val messages = chatsCollection.document(id)
+            try {
+                messages.update(
+                    "messages",
+                    FieldValue.arrayUnion(Message(message, Firebase.auth.currentUser?.email!!))
+                )
+            } catch (e: Exception) {
+                Log.e("Error", "No se pudo enviar el mensaje $e", e)
+            }
+        }
+    }
+
     fun saveUser(user: User) = CoroutineScope(Dispatchers.IO).launch {
         try {
             val querySnapshot = usersCollection.get().await()
@@ -142,11 +185,11 @@ class FirebaseViewModel {
             usersCollection.add(user)
 
         } catch (e: Exception) {
-
+            e.message?.let { Log.e("Error", it) }
         }
     }
 
-    fun suscribeToRealtimeUpdates(setData: (list: MutableList<User>) -> Unit) {
+    fun subscribeToRealtimeUpdates(setData: (list: MutableList<User>) -> Unit) {
         val arrayUsers = mutableListOf<User>()
         usersCollection.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             firebaseFirestoreException?.let {
