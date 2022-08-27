@@ -51,16 +51,8 @@ class AuthenticationViewModel {
         return googleClient.signInIntent
     }
 
-    fun signOutGoogle(context: Context) {
-        val googleOptions = GoogleSignInOptions
-            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.webclient_id))
-            .requestEmail()
-            .build()
-
-        val googleClient = GoogleSignIn.getClient(context, googleOptions)
-        googleClient.signOut()
-
+    fun signOutGoogle() {
+        FirebaseAuth.getInstance().signOut()
     }
 
     fun signInWithGoogle(signInIntent: Intent?, navigate: (successful: Boolean) -> Unit) {

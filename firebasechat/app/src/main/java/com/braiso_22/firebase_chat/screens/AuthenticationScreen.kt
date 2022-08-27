@@ -36,6 +36,7 @@ import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
 lateinit var launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
@@ -48,6 +49,11 @@ var password = mutableStateOf("")
 @Destination(route = "auth")
 @Composable
 fun AuthenticationScreen(navigator: DestinationsNavigator) {
+    LaunchedEffect("user") {
+        if (Firebase.auth.currentUser != null) {
+            navigator.navigate(ContactsScreenDestination)
+        }
+    }
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -63,8 +69,8 @@ fun AuthenticationScreen(navigator: DestinationsNavigator) {
         Spacer(modifier = Modifier.padding(16.dp))
         checkDataButtons(navigator)
     }
-}
 
+}
 
 @Composable
 fun appLogo() {
@@ -147,7 +153,8 @@ fun checkDataButtons(navigator: DestinationsNavigator) {
                             }
                         }
                     } else if (!userExists && username.value.isNotEmpty()
-                        && isEmail(email.value) && !isPassword(password.value)) {
+                        && isEmail(email.value) && !isPassword(password.value)
+                    ) {
                         showAlert(
                             context = localContext,
                             "The password must have an uppercase," +

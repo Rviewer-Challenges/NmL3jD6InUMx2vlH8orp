@@ -18,11 +18,16 @@ import androidx.compose.ui.unit.sp
 import com.braiso_22.firebase_chat.authViewModel
 import com.braiso_22.firebase_chat.firebaseViewModel
 import com.braiso_22.firebase_chat.model.User
+import com.braiso_22.firebase_chat.screens.destinations.AuthenticationScreenDestination
 import com.braiso_22.firebase_chat.screens.destinations.ChatScreenDestination
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 @Destination(route = "contacts")
@@ -48,8 +53,9 @@ fun ContactsScreen(navigator: DestinationsNavigator) {
         },
             navigationIcon = {
                 IconButton(onClick = {
-                    navigator.navigateUp()
-                    authViewModel.signOutGoogle(localContext)
+
+                    authViewModel.signOutGoogle()
+                    navigator.navigate(AuthenticationScreenDestination)
                     Toast.makeText(localContext, "Signed out", Toast.LENGTH_SHORT).show()
                 }) {
                     Icon(
